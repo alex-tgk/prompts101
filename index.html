@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompt Engineering That Actually Works</title>
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@5.1.0/dist/theme/black.css" id="theme">
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@5.1.0/plugin/highlight/monokai.css">
+  <style>
+    :root {
+      --r-background-color: #1a1a2e;
+      --r-main-color: #e8e8e8;
+      --r-heading-color: #ffffff;
+      --r-link-color: #D31334;
+      --r-link-color-hover: #ff2850;
+      --r-selection-background-color: #D31334;
+      --r-selection-color: #fff;
+      --accent: #D31334;
+      --subtle: #888;
+      --surface: #16213e;
+    }
+
+    .reveal {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 32px;
+      color: var(--r-main-color);
+    }
+
+    .reveal .slides {
+      text-align: left;
+    }
+
+    .reveal .slides section {
+      padding: 40px;
+    }
+
+    .reveal h1, .reveal h2, .reveal h3 {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      text-transform: none;
+      color: var(--r-heading-color);
+    }
+
+    .reveal h1 {
+      font-size: 2.2em;
+      line-height: 1.1;
+    }
+
+    .reveal h2 {
+      font-size: 1.6em;
+      margin-bottom: 0.6em;
+    }
+
+    .reveal h3 {
+      font-size: 1.2em;
+      color: var(--accent);
+      margin-bottom: 0.4em;
+    }
+
+    .reveal p {
+      line-height: 1.5;
+      margin-bottom: 0.5em;
+    }
+
+    .reveal .accent {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .reveal .subtle {
+      color: var(--subtle);
+      font-size: 0.75em;
+    }
+
+    .reveal .big-statement {
+      font-size: 2em;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    .reveal .big-statement .accent {
+      display: block;
+      font-size: 1.1em;
+      margin-top: 0.2em;
+    }
+
+    .reveal pre {
+      width: 100%;
+      font-size: 0.52em;
+      box-shadow: none;
+      margin: 0.5em 0;
+    }
+
+    .reveal pre code {
+      padding: 20px 24px;
+      border-radius: 10px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      max-height: 520px;
+      line-height: 1.45;
+    }
+
+    .reveal code {
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", Menlo, monospace;
+    }
+
+    .reveal :not(pre) > code {
+      background: rgba(211, 19, 52, 0.15);
+      color: #ff6b8a;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.88em;
+    }
+
+    .reveal ul, .reveal ol {
+      margin-left: 0;
+      line-height: 1.6;
+    }
+
+    .reveal li {
+      margin-bottom: 0.35em;
+    }
+
+    .reveal .slide-title {
+      text-align: center;
+    }
+
+    .reveal .slide-title h1 {
+      font-size: 2.6em;
+      margin-bottom: 0.2em;
+    }
+
+    .reveal .slide-title .subtitle {
+      font-size: 1.1em;
+      color: var(--subtle);
+      margin-bottom: 1.5em;
+    }
+
+    .reveal .slide-title .author {
+      font-size: 0.75em;
+      color: var(--subtle);
+      border-top: 2px solid var(--accent);
+      display: inline-block;
+      padding-top: 0.5em;
+    }
+
+    /* Pillar / block grid */
+    .pillars {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-top: 0.8em;
+    }
+
+    .pillar {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 18px 14px;
+      text-align: center;
+      border-top: 3px solid var(--accent);
+    }
+
+    .pillar .number {
+      font-size: 1.8em;
+      font-weight: 800;
+      color: var(--accent);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .pillar .label {
+      font-size: 0.7em;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .pillar .desc {
+      font-size: 0.5em;
+      color: var(--subtle);
+      line-height: 1.3;
+    }
+
+    /* Comparison layout */
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 0.6em;
+    }
+
+    .compare-col {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .compare-col.bad {
+      border-top: 3px solid #ff4444;
+    }
+
+    .compare-col.good {
+      border-top: 3px solid #44cc66;
+    }
+
+    .compare-col h4 {
+      margin: 0 0 10px 0;
+      font-size: 0.75em;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .compare-col.bad h4 { color: #ff4444; }
+    .compare-col.good h4 { color: #44cc66; }
+
+    /* Flow diagram */
+    .flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 0.8em 0;
+      flex-wrap: wrap;
+    }
+
+    .flow-step {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-size: 0.65em;
+      text-align: center;
+      min-width: 120px;
+      border: 1px solid #30363d;
+    }
+
+    .flow-arrow {
+      color: var(--accent);
+      font-size: 1.4em;
+      font-weight: 700;
+    }
+
+    /* Cost visual */
+    .cost-compare {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 20px;
+      align-items: center;
+      margin-top: 0.6em;
+    }
+
+    .cost-box {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .cost-box.bad { border: 2px solid #ff4444; }
+    .cost-box.good { border: 2px solid #44cc66; }
+
+    .cost-vs {
+      font-size: 1.4em;
+      font-weight: 800;
+      color: var(--subtle);
+    }
+
+    .request-dots {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 10px 0;
+    }
+
+    .request-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .request-dot.wasted { background: #ff4444; }
+    .request-dot.good { background: #44cc66; }
+
+    /* Takeaway boxes */
+    .takeaway-grid {
+      display: grid;
+      gap: 16px;
+      margin-top: 0.5em;
+    }
+
+    .takeaway-item {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 20px 24px;
+      border-left: 4px solid var(--accent);
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .takeaway-num {
+      font-size: 1.4em;
+      font-weight: 800;
+      color: var(--accent);
+      min-width: 30px;
+    }
+
+    .takeaway-text {
+      font-size: 0.78em;
+      line-height: 1.4;
+    }
+
+    .takeaway-text strong {
+      display: block;
+      font-size: 1.15em;
+      margin-bottom: 2px;
+    }
+
+    /* CTA list */
+    .cta-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .cta-list li {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      font-size: 0.82em;
+      border-left: 3px solid var(--accent);
+    }
+
+    .cta-list li strong {
+      color: var(--accent);
+    }
+
+    /* Pattern cards */
+    .pattern-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 0.5em;
+    }
+
+    .pattern-card {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 18px;
+      border-top: 3px solid var(--accent);
+    }
+
+    .pattern-card h4 {
+      margin: 0 0 6px;
+      font-size: 0.85em;
+      color: #fff;
+    }
+
+    .pattern-card p {
+      margin: 0;
+      font-size: 0.6em;
+      color: var(--subtle);
+      line-height: 1.35;
+    }
+
+    /* Q&A slide */
+    .qa-slide {
+      text-align: center;
+    }
+
+    .qa-slide h1 {
+      font-size: 3.5em;
+      margin-bottom: 0.4em;
+    }
+
+    /* Impact grid */
+    .impact-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 0.6em;
+    }
+
+    .impact-card {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 22px 18px;
+      text-align: center;
+      border-top: 3px solid var(--accent);
+    }
+
+    .impact-card h4 {
+      margin: 0 0 8px;
+      font-size: 0.85em;
+      color: var(--accent);
+    }
+
+    .impact-card p {
+      margin: 0;
+      font-size: 0.6em;
+      color: var(--subtle);
+      line-height: 1.35;
+    }
+
+    /* APE framework */
+    .ape-block {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .ape-label {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.55em;
+      padding: 4px 10px;
+      border-radius: 4px;
+      min-width: 110px;
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+
+    .ape-value {
+      font-size: 0.65em;
+      color: var(--r-main-color);
+    }
+
+    /* Slide number */
+    .reveal .slide-number {
+      color: var(--subtle);
+      font-size: 14px;
+    }
+
+    /* Speaker notes hidden */
+    .reveal aside.notes {
+      display: none;
+    }
+
+    /* Transition slide */
+    .transition-slide {
+      text-align: center;
+      display: flex !important;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .transition-slide h2 {
+      font-size: 1.8em;
+      font-style: italic;
+      color: var(--subtle);
+    }
+
+    .transition-slide .accent {
+      font-style: normal;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- ============== SLIDE 1: Title ============== -->
+      <section class="slide-title">
+        <h1>Prompt Engineering<br>That <span class="accent">Actually Works</span></h1>
+        <p class="subtitle">GitHub Copilot & AI Tools at Lululemon</p>
+        <p class="author">Alex Carroll &nbsp;|&nbsp; Tech Engineer &nbsp;|&nbsp; AI CoP &nbsp;|&nbsp; April 9, 2026</p>
+        <aside class="notes">
+          <ul>
+            <li>Welcome everyone, thanks for making time</li>
+            <li>This talk is about getting real ROI from AI tools we're already paying for</li>
+            <li>No live demo today -- all the "wow" is in before/after comparisons on the slides</li>
+          </ul>
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 2: The Hook ============== -->
+      <section>
+        <div class="big-statement" style="margin-top: 1.5em;">
+          The model isn't the bottleneck.
+          <span class="accent fragment">The prompt is.</span>
+        </div>
+        <p class="fragment subtle" style="text-align: center; margin-top: 1.2em; max-width: 700px; margin-left: auto; margin-right: auto;">
+          The gap between developers who get value from AI tools and those who don't isn't talent or the tool&thinsp;&mdash;&thinsp;it's the instructions.
+        </p>
+        <aside class="notes">
+          <ul>
+            <li>Pause after "the prompt is" -- let it land</li>
+            <li>This reframes the conversation: it's not about which model is best, it's about how we use it</li>
+            <li>The implication: this is a skill we can teach and scale</li>
+          </ul>
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 3: What Most Developers Do ============== -->
+      <section>
+        <h2>What Most Developers Do</h2>
+        <pre><code class="language-text">Write a React component for a product card</code></pre>
+        <div style="margin-top: 0.5em;">
+          <p class="subtle" style="margin-bottom: 0.3em;">What you get back:</p>
+          <pre><code class="language-tsx">import React from "react";
+
+// This component renders a product card
+// Props are passed to display product information
+export default function ProductCard(props: any) {
+  return (
+    &lt;div style={{ border: "1px solid #ccc", padding: "16px" }}&gt;
+      &lt;img src={props.image} /&gt;
+      &lt;h2&gt;{props.title}&lt;/h2&gt;
+      &lt;p&gt;${props.price}&lt;/p&gt;
+      &lt;button onClick={() =&gt; console.log("add to cart")}&gt;
+        Add to Cart
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+        </div>
+        <p class="accent" style="font-size: 0.8em; margin-top: 0.3em;">
+          No types. Inline styles. Default export. <code>any</code>. Comments explaining React basics.
+        </p>
+        <p style="font-size: 0.75em; margin-top: 0.5em; color: var(--subtle);">
+          Now you retry. And retry again. <span class="accent">3 premium requests burned</span> &mdash; and you restart the thread each time, losing context.
+        </p>
+        <aside class="notes">
+          <ul>
+            <li>This is what "asking" looks like -- vague input, vague output</li>
+            <li>The model isn't wrong -- it answered exactly what was asked</li>
+            <li>The cost: every retry is a premium request, and restarting threads resets context</li>
+          </ul>
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 4: The 5 Building Blocks ============== -->
+      <section>
+        <h2>The 5 Building Blocks</h2>
+        <div class="pillars">
+          <div class="pillar fragment">
+            <span class="number">1</span>
+            <span class="label">Role</span>
+            <span class="desc">Define who the AI is</span>
+          </div>
+          <div class="pillar fragment">
+            <span class="number">2</span>
+            <span class="label">Context</span>
+            <span class="desc">Your stack, conventions, norms</span>
+          </div>
+          <div class="pillar fragment">
+            <span class="number">3</span>
+            <span class="label">Constraints</span>
+            <span class="desc">What NOT to do</span>
+          </div>
+          <div class="pillar fragment">
+            <span class="number">4</span>
+            <span class="label">Format</span>
+            <span class="desc">Code only? With tests? Types?</span>
+          </div>
+          <div class="pillar fragment">
+            <span class="number">5</span>
+            <span class="label">Examples</span>
+            <span class="desc">Show good &amp; bad patterns</span>
+          </div>
+        </div>
+        <aside class="notes">
+          <ul>
+            <li>These are the 5 building blocks of any good system prompt</li>
+            <li>You don't need all five every time -- but knowing the toolkit changes how you prompt</li>
+            <li>We'll zoom in on Constraints next -- that's the secret weapon</li>
+          </ul>
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 5: Constraints: The Secret Weapon ============== -->
+      <section>
+        <h2>Constraints: <span class="accent">The Secret Weapon</span></h2>
+        <p style="font-size: 0.75em; color: var(--subtle);">The most underused and highest-leverage lever</p>
+        <pre class="fragment"><code class="language-plaintext">Do NOT:
+- Use default exports
+- Use inline styles or CSS modules
+- Use `any` type
+- Add comments explaining basic React concepts
+- Add console.log statements
+- Import from barrel files</code></pre>
+        <p style="font-size: 0.78em; margin-top: 0.6em;">
+          <span class="accent">Constraints narrow the output space faster than positive instructions.</span>
+        </p>
+        <p class="subtle" style="margin-top: 0.4em;">
+          Think of it like a creative brief&thinsp;&mdash;&thinsp;telling the designer what's <em>off-brand</em><br>is faster than describing every possible on-brand option.
+        </p>
+        <aside class="notes">
+          <ul>
+            <li>This is the insight most people miss -- negation is more powerful than specification</li>
+            <li>The creative brief analogy resonates well with non-technical leaders</li>
+            <li>Emphasize: these constraints come from real code review feedback -- encode it once</li>
+          </ul>
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 6: The Engineered Prompt ============== -->
+      <section>
+        <h2>The Engineered Prompt</h2>
+        <pre><code class="language-plaintext">You are a senior React engineer working in a TypeScript
++ Tailwind CSS codebase.
+
+Generate a ProductCard component that:
+- Accepts props: { title: string; price: number;
+  imageUrl: string; isOnSale?: boolean }
+- Uses Tailwind utility classes (no CSS modules)
+- Includes proper TypeScript types (no `any`)
+- Has hover state with scale transform
+- Shows a sale badge conditionally
+- Is accessible (alt text, semantic HTML, keyboard navigable)
+
+Do NOT:
+- Use inline styles
+- Use default exports
+- Add comments explaining basic React concepts
+
+Return only the component file. No tests, no stories.</code></pre>
+        <p class="accent" style="text-align: center; margin-top: 0.5em; font-size: 0.85em;">
+          Same model. Same task. Radically different output.
+        </p>
+        <aside class="notes">
+          <ul>
+            <li>Walk through each section: role, task, constraints, format</li>
+            <li>Contrast this with Slide 3 -- same task, completely different result</li>
+            <li>This is the "before and after" that makes the case</li>
+          </ul>
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 7: APE Framework ============== -->
+      <section>
+        <h2>The <span class="accent">APE</span> Framework</h2>
+        <p style="font-size: 0.8em; margin-bottom: 0.6em;"><strong class="accent">A</strong>ction &rarr; <strong class="accent">P</strong>urpose &rarr; <strong class="accent">E</strong>xpectation</p>
+        <div class="compare">
+          <div class="compare-col bad">
+            <h4>Vague</h4>
+            <pre><code class="language-text">Fix this function</code></pre>
+          </div>
+          <div class="compare-col good">
+            <h4>APE Prompt</h4>
+            <div style="padding: 4px 0;">
+              <div class="ape-block">
+                <span class="ape-label">Action</span>
+                <span class="ape-value">Refactor fetchProducts to handle pagination</span>
+              </div>
+              <div class="ape-block">
+                <span class="ape-label">Purpose</span>
+                <span class="ape-value">Users see timeouts on collections with 500+ products because we fetch everything at once</span>
+              </div>
+              <div class="ape-block">
+                <span class="ape-label">Expectation</span>
+                <span class="ape-value">Cursor-based pagination with loading state, error recovery, using our ApiResponse&lt;T&gt; type</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="accent" style="text-align: center; margin-top: 0.7em; font-size: 0.85em;">
+          One well-structured APE prompt replaces three vague ones.
+        </p>
+        <aside class="notes">
+          <ul>
+            <li>APE is the easiest framework to remember and apply immediately</li>
+            <li>Purpose is the key differentiator -- it gives the model "why" context</li>
+            <li>When the model knows the problem, it makes better design decisions</li>
+          </ul>
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 8: copilot-instructions.md ============== -->
+      <section>
+        <h2><code>copilot-instructions.md</code></h2>
+        <p style="font-size: 0.78em; color: var(--subtle);">Your persistent system prompt. Write it once, the whole team benefits.</p>
+        <pre><code class="language-plaintext"># .github/copilot-instructions.md
+
+## Stack
+- React 18 + TypeScript 5 (strict mode)
+- Tailwind CSS (no CSS modules)
+- Named exports only (no default exports)
+
+## Conventions
+- Arrow functions, const declarations
+- Props destructured on their own line
+- Zod schemas for all API boundaries
+
+## Do NOT
+- Use `any` type
+- Use inline styles
+- Add TODO comments
+- Import from barrel index files in the same package</code></pre>
+        <p class="accent" style="font-size: 0.82em; margin-top: 0.4em;">
+          New developer joins &rarr; they get AI output that matches your team's standards from day one.
+        </p>
+        <aside class="notes">
+          <ul>
+            <li>This is the scalability play -- one file, entire team benefits</li>
+            <li>Lives in the repo, version-controlled, reviewed like any other code</li>
+            <li>This is what turns individual skill into organizational capability</li>
+          </ul>
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 9: Rethink the Workflow ============== -->
+      <section>
+        <h2>Stop <span class="accent">Bolting AI On</span></h2>
+        <div class="compare">
+          <div class="compare-col bad">
+            <h4>What Most Teams Do</h4>
+            <p style="font-size: 0.65em; color: var(--subtle); line-height: 1.5;">
+              Take an existing workflow<br>
+              &rarr; find a step that's slow<br>
+              &rarr; ask AI to do that step<br>
+              &rarr; wonder why it's underwhelming
+            </p>
+          </div>
+          <div class="compare-col good">
+            <h4>What Actually Works</h4>
+            <p style="font-size: 0.65em; color: var(--subtle); line-height: 1.5;">
+              Step back to the <em>outcome</em> you need<br>
+              &rarr; rethink the approach from scratch<br>
+              &rarr; design the workflow <em>with</em> AI as a collaborator<br>
+              &rarr; the whole process transforms
+            </p>
+          </div>
+        </div>
+        <p class="accent" style="text-align: center; margin-top: 0.8em; font-size: 0.85em;">
+          Don't automate the old way. Reimagine the work at a higher level.
+        </p>
+        <aside class="notes">
+          <ul>
+            <li>This is the biggest mindset shift -- AI isn't a faster keyboard, it's a different way of working</li>
+            <li>Example: don't ask AI to write one function. Describe the problem, let it architect the solution.</li>
+            <li>The teams getting the most value aren't plugging AI into old processes -- they're rethinking the process itself</li>
+          </ul>
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 10: The Compound Effect ============== -->
+      <section>
+        <h2>The <span class="accent">Compound</span> Effect</h2>
+        <div class="impact-grid">
+          <div class="impact-card fragment">
+            <h4>Individual</h4>
+            <p>Fewer retries, faster output, higher quality code from first response</p>
+          </div>
+          <div class="impact-card fragment">
+            <h4>Team</h4>
+            <p><code>copilot-instructions.md</code> = consistent standards without manual review overhead</p>
+          </div>
+          <div class="impact-card fragment">
+            <h4>Organization</h4>
+            <p>AI tool ROI goes from "nice to have" to measurable productivity gain</p>
+          </div>
+        </div>
+        <p style="text-align: center; margin-top: 0.8em; font-size: 0.82em;">
+          This isn't about making developers faster.<br>
+          It's about making them <span class="accent">consistently effective.</span>
+        </p>
+        <aside class="notes">
+          <ul>
+            <li>This is the business case slide -- frame each level for the VPs</li>
+            <li>"Consistently effective" is the key phrase -- speed is a side effect</li>
+            <li>ROI framing: we already pay for these tools, this is about maximizing the investment</li>
+          </ul>
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 11: Key Takeaways + CTA ============== -->
+      <section>
+        <h2>Key Takeaways</h2>
+        <div class="takeaway-grid">
+          <div class="takeaway-item fragment">
+            <span class="takeaway-num">1</span>
+            <div class="takeaway-text">
+              <strong>Engineer the prompt, don't just ask</strong>
+              Vague in, vague out. Structure your input like you'd structure a requirement.
+            </div>
+          </div>
+          <div class="takeaway-item fragment">
+            <span class="takeaway-num">2</span>
+            <div class="takeaway-text">
+              <strong>Constraints are your highest-leverage tool</strong>
+              Tell the AI what NOT to do. It narrows output faster than positive instructions.
+            </div>
+          </div>
+          <div class="takeaway-item fragment">
+            <span class="takeaway-num">3</span>
+            <div class="takeaway-text">
+              <strong>Scale it with <code>copilot-instructions.md</code></strong>
+              Write once, whole team benefits. New hires get AI output matching your standards from day one.
+            </div>
+          </div>
+        </div>
+        <p style="text-align: center; margin-top: 0.6em; font-size: 0.78em;">
+          <strong>Try today:</strong> Add a <code>copilot-instructions.md</code> to one repo. Use APE on your next prompt.
+        </p>
+        <p class="subtle" style="text-align: center; margin-top: 0.4em;">
+          The model is already good enough. Your instructions are the variable.
+        </p>
+        <aside class="notes">
+          <ul>
+            <li>Reinforce the three things you want them to remember</li>
+            <li>The CTA is simple: one file, one framework, start today</li>
+            <li>Full talk with live demo coming April 9 for anyone who wants to go deeper</li>
+          </ul>
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 12: Q&A ============== -->
+      <section class="qa-slide">
+        <h1>Questions<span class="accent">?</span></h1>
+        <p style="color: var(--subtle); font-size: 0.7em; margin-top: 1em;">
+          Alex Carroll &nbsp;|&nbsp; Tech Engineer &nbsp;|&nbsp; AI CoP
+        </p>
+        <aside class="notes">
+          <ul>
+            <li>Open floor for questions -- expect questions about copilot-instructions.md adoption</li>
+            <li>Have a backup: "If no questions, here's one I get a lot..."</li>
+            <li>Thank everyone for their time</li>
+          </ul>
+        </aside>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://unpkg.com/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+  <script src="https://unpkg.com/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+      transition: 'slide',
+      transitionSpeed: 'default',
+      backgroundTransition: 'slide',
+      center: true,
+      width: 1280,
+      height: 720,
+      margin: 0.08,
+      plugins: [RevealHighlight, RevealNotes]
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "prompts101-markdown-preview",
+  "private": true,
+  "scripts": {
+    "preview": "live-server --open=preview/index.html --port=5173",
+    "start": "pnpm preview"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "dependencies": {
+    "marked": "^5.1.1",
+    "highlight.js": "^11.8.0"
+  }
+}
