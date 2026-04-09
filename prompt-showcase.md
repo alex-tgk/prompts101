@@ -728,6 +728,7 @@ Do NOT comment on code style, variable naming, or formatting.
 | **Response Iteration** | Complex features, multi-concern components | Generate core, then critique, then refine (same thread) |
 | **Role Prompting** | Specialized reviews, security, performance | "You are a [specific role] reviewing [specific artifact]..." |
 | **Meta-Prompt** | Creating reusable system prompts | "Generate a system prompt for [task] using: role, context, constraints, format, examples" |
+| **Rethink, Don't Bolt On** | Starting any AI-assisted task | Step back to the *outcome* you need, then design the approach with AI as a collaborator -- don't just automate the old steps |
 
 ### The 30-Second Version
 
@@ -779,7 +780,13 @@ Every good prompt answers five questions:
 
 **Fix**: Break into 3-4 focused requests in the same thread. Each concern gets 100% attention, and results compound.
 
-### 7. No context about your stack
+### 7. Bolting AI onto your old workflow
+
+**Problem**: You take your existing 6-step process, find the slow step, and ask AI to do it. The output is mediocre because the AI has no context about the decisions that led to that step.
+
+**Fix**: Step back to the outcome. Instead of "write tests for this function," try "here's the behavior I need — generate the implementation and tests together." Operate at a higher level of abstraction. The teams getting the most value aren't automating old processes — they're rethinking the process itself.
+
+### 8. No context about your stack
 
 **Problem**: "Write a form component" could produce React, Vue, Angular, Svelte, or vanilla JS. It could use CSS modules, styled-components, Tailwind, or inline styles.
 

@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompt Engineering That Actually Works — Live Demo Edition</title>
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@5.1.0/dist/theme/black.css" id="theme">
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@5.1.0/plugin/highlight/monokai.css">
+  <style>
+    :root {
+      --r-background-color: #1a1a2e;
+      --r-main-color: #e8e8e8;
+      --r-heading-color: #ffffff;
+      --r-link-color: #D31334;
+      --r-link-color-hover: #ff2850;
+      --r-selection-background-color: #D31334;
+      --r-selection-color: #fff;
+      --accent: #D31334;
+      --subtle: #888;
+      --surface: #16213e;
+      --green: #44cc66;
+      --red: #ff4444;
+    }
+
+    .reveal {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 32px;
+      color: var(--r-main-color);
+    }
+
+    .reveal .slides {
+      text-align: left;
+    }
+
+    .reveal .slides section {
+      padding: 40px;
+    }
+
+    .reveal h1, .reveal h2, .reveal h3 {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      text-transform: none;
+      color: var(--r-heading-color);
+    }
+
+    .reveal h1 {
+      font-size: 2.2em;
+      line-height: 1.1;
+    }
+
+    .reveal h2 {
+      font-size: 1.6em;
+      margin-bottom: 0.6em;
+    }
+
+    .reveal h3 {
+      font-size: 1.2em;
+      color: var(--accent);
+      margin-bottom: 0.4em;
+    }
+
+    .reveal p {
+      line-height: 1.5;
+      margin-bottom: 0.5em;
+    }
+
+    .reveal .accent {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .reveal .subtle {
+      color: var(--subtle);
+      font-size: 0.75em;
+    }
+
+    .reveal .big-statement {
+      font-size: 2em;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    .reveal .big-statement .accent {
+      display: block;
+      font-size: 1.1em;
+      margin-top: 0.2em;
+    }
+
+    .reveal pre {
+      width: 100%;
+      font-size: 0.52em;
+      box-shadow: none;
+      margin: 0.5em 0;
+    }
+
+    .reveal pre code {
+      padding: 20px 24px;
+      border-radius: 10px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      max-height: 520px;
+      line-height: 1.45;
+    }
+
+    .reveal code {
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", Menlo, monospace;
+    }
+
+    .reveal :not(pre) > code {
+      background: rgba(211, 19, 52, 0.15);
+      color: #ff6b8a;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.88em;
+    }
+
+    .reveal ul, .reveal ol {
+      margin-left: 0;
+      line-height: 1.6;
+    }
+
+    .reveal li {
+      margin-bottom: 0.35em;
+    }
+
+    /* Title slide */
+    .reveal .slide-title {
+      text-align: center;
+    }
+
+    .reveal .slide-title h1 {
+      font-size: 2.6em;
+      margin-bottom: 0.2em;
+    }
+
+    .reveal .slide-title .subtitle {
+      font-size: 1.1em;
+      color: var(--subtle);
+      margin-bottom: 1.5em;
+    }
+
+    .reveal .slide-title .author {
+      font-size: 0.75em;
+      color: var(--subtle);
+      border-top: 2px solid var(--accent);
+      display: inline-block;
+      padding-top: 0.5em;
+    }
+
+    /* Pillar grid */
+    .pillars {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-top: 0.8em;
+    }
+
+    .pillar {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 18px 14px;
+      text-align: center;
+      border-top: 3px solid var(--accent);
+    }
+
+    .pillar .number {
+      font-size: 1.8em;
+      font-weight: 800;
+      color: var(--accent);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .pillar .label {
+      font-size: 0.7em;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .pillar .desc {
+      font-size: 0.5em;
+      color: var(--subtle);
+      line-height: 1.3;
+    }
+
+    /* Comparison layout */
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 0.6em;
+    }
+
+    .compare-col {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .compare-col.bad {
+      border-top: 3px solid var(--red);
+    }
+
+    .compare-col.good {
+      border-top: 3px solid var(--green);
+    }
+
+    .compare-col h4 {
+      margin: 0 0 10px 0;
+      font-size: 0.75em;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .compare-col.bad h4 { color: var(--red); }
+    .compare-col.good h4 { color: var(--green); }
+
+    /* APE framework */
+    .ape-block {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .ape-label {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.55em;
+      padding: 4px 10px;
+      border-radius: 4px;
+      min-width: 110px;
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+
+    .ape-value {
+      font-size: 0.65em;
+      color: var(--r-main-color);
+    }
+
+    /* Impact grid */
+    .impact-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 0.6em;
+    }
+
+    .impact-card {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 22px 18px;
+      text-align: center;
+      border-top: 3px solid var(--accent);
+    }
+
+    .impact-card h4 {
+      margin: 0 0 8px;
+      font-size: 0.85em;
+      color: var(--accent);
+    }
+
+    .impact-card p {
+      margin: 0;
+      font-size: 0.6em;
+      color: var(--subtle);
+      line-height: 1.35;
+    }
+
+    /* Takeaway boxes */
+    .takeaway-grid {
+      display: grid;
+      gap: 14px;
+      margin-top: 0.5em;
+    }
+
+    .takeaway-item {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 18px 22px;
+      border-left: 4px solid var(--accent);
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .takeaway-num {
+      font-size: 1.4em;
+      font-weight: 800;
+      color: var(--accent);
+      min-width: 30px;
+    }
+
+    .takeaway-text {
+      font-size: 0.72em;
+      line-height: 1.4;
+    }
+
+    .takeaway-text strong {
+      display: block;
+      font-size: 1.12em;
+      margin-bottom: 2px;
+    }
+
+    /* Demo slide */
+    .demo-slide {
+      text-align: center;
+      display: flex !important;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .demo-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.55em;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 8px 24px;
+      border-radius: 6px;
+      margin-bottom: 0.6em;
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 8px rgba(211, 19, 52, 0.4); }
+      50% { box-shadow: 0 0 20px rgba(211, 19, 52, 0.7); }
+    }
+
+    .demo-slide h2 {
+      text-align: center;
+      margin-bottom: 0.3em;
+    }
+
+    .demo-slide .demo-context {
+      font-size: 0.7em;
+      color: var(--subtle);
+      max-width: 700px;
+      line-height: 1.5;
+      margin-top: 0.4em;
+    }
+
+    .demo-slide .demo-prompt {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 20px 28px;
+      margin-top: 0.8em;
+      max-width: 800px;
+      text-align: left;
+    }
+
+    .demo-slide .demo-prompt code {
+      font-size: 0.6em;
+      color: var(--subtle);
+      line-height: 1.5;
+    }
+
+    /* Workflow shift cards */
+    .workflow-grid {
+      display: grid;
+      gap: 14px;
+      margin-top: 0.5em;
+    }
+
+    .workflow-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .workflow-box {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 0.58em;
+      line-height: 1.4;
+    }
+
+    .workflow-box.old {
+      border-left: 3px solid var(--red);
+      color: var(--subtle);
+    }
+
+    .workflow-box.new {
+      border-left: 3px solid var(--green);
+    }
+
+    .workflow-arrow {
+      color: var(--accent);
+      font-size: 1.2em;
+      font-weight: 700;
+    }
+
+    /* Iteration steps */
+    .iter-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 0.6em;
+    }
+
+    .iter-step {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 18px;
+      border-top: 3px solid var(--accent);
+    }
+
+    .iter-step h4 {
+      margin: 0 0 8px;
+      font-size: 0.7em;
+      color: var(--accent);
+    }
+
+    .iter-step p {
+      margin: 0;
+      font-size: 0.55em;
+      color: var(--subtle);
+      line-height: 1.35;
+    }
+
+    /* Q&A slide */
+    .qa-slide {
+      text-align: center;
+    }
+
+    .qa-slide h1 {
+      font-size: 3.5em;
+      margin-bottom: 0.4em;
+    }
+
+    /* Slide number */
+    .reveal .slide-number {
+      color: var(--subtle);
+      font-size: 14px;
+    }
+
+    /* Speaker notes hidden */
+    .reveal aside.notes {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- ============== SLIDE 1: Title ============== -->
+      <section class="slide-title">
+        <h1>Prompt Engineering<br>That <span class="accent">Actually Works</span></h1>
+        <p class="subtitle">Live Demo Edition</p>
+        <p class="author">Alex Carroll &nbsp;|&nbsp; COSY Team &nbsp;|&nbsp; AI CoP</p>
+        <aside class="notes">
+          Welcome. This talk is practical — everything I show you, I use daily.
+          30 minutes. 4 live demos. You'll leave with techniques you can use today.
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 2: The Hook ============== -->
+      <section>
+        <div class="big-statement" style="margin-top: 1.5em;">
+          The model isn't the bottleneck.
+          <span class="accent">The prompt is.</span>
+        </div>
+        <p class="subtle" style="text-align: center; margin-top: 1.2em; max-width: 700px; margin-left: auto; margin-right: auto;">
+          Same models. Same tools. Wildly different results. The difference isn't talent or the tool&thinsp;&mdash;&thinsp;it's the instructions.
+        </p>
+        <aside class="notes">
+          Every few months there's a new model. The engineers who got bad output before
+          still get bad output. Because the model was never the problem.
+          That's good news — because we control the prompt.
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 3: What We're Building ============== -->
+      <section>
+        <h2>What We're Building Today</h2>
+        <p style="font-size: 0.8em; margin-bottom: 0.6em;">Four demos, one story: <span class="accent">blank slate to production-quality.</span></p>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+          <div style="background: var(--surface); border-radius: 10px; padding: 16px; text-align: center; border-top: 3px solid var(--red);">
+            <div style="font-size: 0.55em; font-weight: 700; color: var(--red); margin-bottom: 6px;">DEMO 1</div>
+            <div style="font-size: 0.6em; font-weight: 700;">The Blank Slate</div>
+            <div style="font-size: 0.48em; color: var(--subtle); margin-top: 4px;">Vague prompt, no context</div>
+          </div>
+          <div style="background: var(--surface); border-radius: 10px; padding: 16px; text-align: center; border-top: 3px solid #ffaa33;">
+            <div style="font-size: 0.55em; font-weight: 700; color: #ffaa33; margin-bottom: 6px;">DEMO 2</div>
+            <div style="font-size: 0.6em; font-weight: 700;">The Engineered Prompt</div>
+            <div style="font-size: 0.48em; color: var(--subtle); margin-top: 4px;">Same task, structured input</div>
+          </div>
+          <div style="background: var(--surface); border-radius: 10px; padding: 16px; text-align: center; border-top: 3px solid #33aaff;">
+            <div style="font-size: 0.55em; font-weight: 700; color: #33aaff; margin-bottom: 6px;">DEMO 3</div>
+            <div style="font-size: 0.6em; font-weight: 700;">Building a Project</div>
+            <div style="font-size: 0.48em; color: var(--subtle); margin-top: 4px;">Iterative context accumulation</div>
+          </div>
+          <div style="background: var(--surface); border-radius: 10px; padding: 16px; text-align: center; border-top: 3px solid var(--green);">
+            <div style="font-size: 0.55em; font-weight: 700; color: var(--green); margin-bottom: 6px;">DEMO 4</div>
+            <div style="font-size: 0.6em; font-weight: 700;">The Team Multiplier</div>
+            <div style="font-size: 0.48em; color: var(--subtle); margin-top: 4px;">Instructions file + simple prompt</div>
+          </div>
+        </div>
+        <p style="font-size: 0.72em; margin-top: 0.8em; text-align: center; color: var(--subtle);">
+          By the end, you'll watch the <em>same model</em> go from useless to indispensable.
+        </p>
+        <aside class="notes">
+          Quick roadmap so people know where we're headed.
+          The color progression from red to green is intentional — we're going from bad to great.
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 4: DEMO 1 — The Blank Slate ============== -->
+      <section class="demo-slide">
+        <div class="demo-badge">Live Demo</div>
+        <h2>The Blank Slate</h2>
+        <p class="demo-context">
+          Fresh Copilot install. No customization. No system prompt.<br>
+          Let's see what happens with a six-word prompt.
+        </p>
+        <div class="demo-prompt">
+          <code>Write a React component for a product card</code>
+        </div>
+        <aside class="notes">
+          Switch to VS Code. Fresh Copilot Chat, no copilot-instructions.md.
+          Type the prompt live. Call out issues as they appear:
+          any types, inline styles, default export, useless comments.
+          "This is what 80% of developers experience. Then they close the chat and start over."
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 5: The 5 Building Blocks ============== -->
+      <section>
+        <h2>The 5 Building Blocks</h2>
+        <p style="font-size: 0.75em; color: var(--subtle);">Every good prompt answers five questions</p>
+        <div class="pillars">
+          <div class="pillar">
+            <span class="number">1</span>
+            <span class="label">Role</span>
+            <span class="desc">Who is the AI?<br>"Senior React engineer"</span>
+          </div>
+          <div class="pillar">
+            <span class="number">2</span>
+            <span class="label">Context</span>
+            <span class="desc">What's the stack?<br>"TS, Tailwind, Next.js"</span>
+          </div>
+          <div class="pillar">
+            <span class="number">3</span>
+            <span class="label">Constraints</span>
+            <span class="desc">What NOT to do?<br>"No any, no defaults"</span>
+          </div>
+          <div class="pillar">
+            <span class="number">4</span>
+            <span class="label">Format</span>
+            <span class="desc">What shape?<br>"Component + barrel export"</span>
+          </div>
+          <div class="pillar">
+            <span class="number">5</span>
+            <span class="label">Examples</span>
+            <span class="desc">Show good & bad<br>"Here's a pattern to follow"</span>
+          </div>
+        </div>
+        <p style="font-size: 0.75em; margin-top: 0.7em;">
+          You don't need all five every time. But when output isn't right, check which one you're missing.
+        </p>
+        <aside class="notes">
+          Quick walkthrough. Don't linger — the audience needs the framework,
+          but the demo is what proves it. Point to each pillar and give the one-liner.
+          "Think of these as controls on a mixing board."
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 6: Constraints ============== -->
+      <section>
+        <h2>Constraints: <span class="accent">The Secret Weapon</span></h2>
+        <p style="font-size: 0.75em; color: var(--subtle);">The most underused and highest-leverage lever</p>
+        <pre><code class="language-plaintext">Do NOT:
+- Use default exports
+- Use inline styles or CSS modules
+- Use `any` type or type assertions
+- Add comments explaining basic concepts
+- Add console.log statements
+- Use class components</code></pre>
+        <p style="font-size: 0.78em; margin-top: 0.6em;">
+          <span class="accent">Telling the model what NOT to do narrows the output space faster than describing what you want.</span>
+        </p>
+        <p class="subtle" style="margin-top: 0.3em;">
+          Think of a creative brief&thinsp;&mdash;&thinsp;"two colors max, no gradients, must work at 16px" gets you focused work.<br>
+          "Make it pop" gets you chaos.
+        </p>
+        <aside class="notes">
+          This is the single biggest unlock for most people. When your output isn't right,
+          don't rewrite the whole prompt — just add constraints. The "Do NOT" block is as
+          important as the requirements block.
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 7: DEMO 2 — The Engineered Prompt ============== -->
+      <section class="demo-slide">
+        <div class="demo-badge">Live Demo</div>
+        <h2>The Engineered Prompt</h2>
+        <p class="demo-context">
+          Same model. Same task. Every building block applied.<br>
+          Watch the difference.
+        </p>
+        <div class="demo-prompt">
+          <code style="font-size: 0.52em;">You are a senior React engineer on a team that uses TypeScript,
+Tailwind CSS, and Next.js 14 with the App Router.
+
+Create a ProductCard component that displays:
+- Product image (with blur placeholder)
+- Product name, price (CAD currency), color swatches
+- "Add to Bag" button
+
+Requirements: TypeScript with explicit types (no any),
+Tailwind only, named export, accessible (alt text, aria-labels,
+keyboard navigable), arrow functions, no comments.
+
+File: product-card/product-card.tsx + product-card/index.ts</code>
+        </div>
+        <aside class="notes">
+          Type this live (you've practiced it). Let the output generate.
+          Call out: full TypeScript, Tailwind classes, named export, accessibility.
+          "Same model. The prompt is the only variable."
+          Beat: "This is a teachable skill. Not talent. Technique."
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 8: APE Framework ============== -->
+      <section>
+        <h2>The <span class="accent">APE</span> Framework</h2>
+        <p style="font-size: 0.8em; margin-bottom: 0.6em;"><strong class="accent">A</strong>ction &rarr; <strong class="accent">P</strong>urpose &rarr; <strong class="accent">E</strong>xpectation</p>
+        <div class="compare">
+          <div class="compare-col bad">
+            <h4>Vague</h4>
+            <pre><code class="language-text">Fix this function, it's timing out</code></pre>
+            <p style="font-size: 0.55em; color: var(--subtle); margin-top: 8px;">
+              Model adds <code>limit: 50</code>. Problem "fixed." 450 products silently dropped.
+            </p>
+          </div>
+          <div class="compare-col good">
+            <h4>APE Prompt</h4>
+            <div style="padding: 4px 0;">
+              <div class="ape-block">
+                <span class="ape-label">Action</span>
+                <span class="ape-value">Refactor fetchProducts to use cursor-based pagination</span>
+              </div>
+              <div class="ape-block">
+                <span class="ape-label">Purpose</span>
+                <span class="ape-value">500+ product collections cause API timeouts at 30s limit</span>
+              </div>
+              <div class="ape-block">
+                <span class="ape-label">Expectation</span>
+                <span class="ape-value">Batches of 100, loading callback, abort support, graceful degradation</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="accent" style="text-align: center; margin-top: 0.7em; font-size: 0.82em;">
+          Three seconds of thought. Three fewer retries.
+        </p>
+        <aside class="notes">
+          APE is the easiest framework to remember. Action = what. Purpose = why. Expectation = done.
+          The Purpose is the key — when the model knows WHY, it makes better architectural decisions.
+          Don't linger here. Quick hit, move to the workflow slide.
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 9: Stop Bolting AI On ============== -->
+      <section>
+        <h2>Stop <span class="accent">Bolting AI On</span></h2>
+        <div class="compare">
+          <div class="compare-col bad">
+            <h4>What Most Teams Do</h4>
+            <p style="font-size: 0.65em; color: var(--subtle); line-height: 1.6;">
+              Take your existing workflow<br>
+              &rarr; find the step that's slow<br>
+              &rarr; ask AI to do that step<br>
+              &rarr; wonder why it's underwhelming
+            </p>
+          </div>
+          <div class="compare-col good">
+            <h4>What Actually Works</h4>
+            <p style="font-size: 0.65em; color: var(--subtle); line-height: 1.6;">
+              Step back to the <em>outcome</em> you need<br>
+              &rarr; rethink the approach from scratch<br>
+              &rarr; design the workflow <em>with</em> AI<br>
+              &rarr; the whole process transforms
+            </p>
+          </div>
+        </div>
+        <p class="accent" style="text-align: center; margin-top: 0.8em; font-size: 0.85em;">
+          Don't automate the old way. Reimagine the work at a higher level.
+        </p>
+        <aside class="notes">
+          SLOW DOWN. This is the mindset shift. The meta-lesson.
+          "The teams getting real value aren't automating old processes — they're rethinking the process itself."
+          "It's the difference between using AI to write boilerplate faster and using AI to eliminate the need for boilerplate entirely."
+          Let this land. Pause.
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 10: New Workflow in Practice ============== -->
+      <section>
+        <h2>The <span class="accent">New</span> Workflow</h2>
+        <div class="workflow-grid">
+          <div class="workflow-row">
+            <div class="workflow-box old">
+              Write code &rarr; ask AI to write tests &rarr; generic tests that test implementation details
+            </div>
+            <div class="workflow-arrow">&rarr;</div>
+            <div class="workflow-box new">
+              Describe the <strong>behavior</strong> &rarr; AI generates implementation + tests together &rarr; tests actually verify what matters
+            </div>
+          </div>
+          <div class="workflow-row">
+            <div class="workflow-box old">
+              Write PR &rarr; ask AI "review this" &rarr; "looks good, consider adding types"
+            </div>
+            <div class="workflow-arrow">&rarr;</div>
+            <div class="workflow-box new">
+              Define review <strong>criteria</strong> (security, perf, a11y) &rarr; AI does focused, actionable review with severity levels
+            </div>
+          </div>
+          <div class="workflow-row">
+            <div class="workflow-box old">
+              Scaffold manually &rarr; ask AI to fill in pieces &rarr; inconsistent patterns across files
+            </div>
+            <div class="workflow-arrow">&rarr;</div>
+            <div class="workflow-box new">
+              <code>copilot-instructions.md</code> + structured prompt &rarr; consistent, convention-compliant output from line one
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          Three concrete examples they can take back to their teams.
+          The pattern: old way operates at the task level, new way operates at the outcome level.
+          "You're not asking AI to do a step. You're asking it to help achieve the goal."
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 11: DEMO 3 — Building a Project ============== -->
+      <section class="demo-slide">
+        <div class="demo-badge">Live Demo</div>
+        <h2>Building a Project</h2>
+        <p class="demo-context">
+          Three messages, one thread. Each builds on the last.<br>
+          The model remembers everything.
+        </p>
+        <div class="iter-grid">
+          <div class="iter-step">
+            <h4>Message 1: Core</h4>
+            <p>ProductReviewCard with star rating, review text, reviewer name + date</p>
+          </div>
+          <div class="iter-step">
+            <h4>Message 2: Interactivity</h4>
+            <p>Helpful / Not Helpful buttons, optimistic UI, toggle behavior</p>
+          </div>
+          <div class="iter-step">
+            <h4>Message 3: Accessibility</h4>
+            <p>Screen reader announcements, aria-pressed, keyboard nav, aria-live</p>
+          </div>
+        </div>
+        <p style="text-align: center; margin-top: 0.6em; font-size: 0.7em; color: var(--subtle);">
+          Three focused messages beat one mega-prompt <em>and</em> three separate conversations.
+        </p>
+        <aside class="notes">
+          Switch to VS Code. Stay in the same Copilot Chat thread.
+          Key point: you don't re-specify TypeScript, Tailwind, etc. — it already knows.
+          Message 2: "Watch — it modifies the existing component, not a new one."
+          Message 3: "Each concern gets 100% attention."
+          If tight on time, skip Message 3 and describe what it would do.
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 12: copilot-instructions.md ============== -->
+      <section>
+        <h2><code>copilot-instructions.md</code></h2>
+        <p style="font-size: 0.78em; color: var(--subtle);">A persistent system prompt. Write it once. The whole team benefits.</p>
+        <pre><code class="language-markdown"># .github/copilot-instructions.md
+
+## Stack
+- React 18 + TypeScript 5.4 (strict mode)
+- Next.js 14 App Router (server components by default)
+- Tailwind CSS 3.4 (no CSS modules, no styled-components)
+- Zod for runtime validation at API boundaries
+
+## Code Rules
+- `const` only, arrow functions exclusively
+- Named exports only (no default exports)
+- No `any` — use `unknown` and narrow with type guards
+- No inline styles, no explanatory comments
+- Props destructured on their own line
+
+## Naming
+- Files/folders: kebab-case (product-card.tsx)
+- Components: PascalCase, Hooks: usePrefix
+
+## File Structure
+  my-component/
+    my-component.tsx     # component
+    my-component.test.tsx
+    index.ts             # barrel export</code></pre>
+        <p style="font-size: 0.76em; margin-top: 0.3em;">
+          <span class="accent">New developer joins &rarr;</span> AI output matches your team's standards from day one.
+        </p>
+        <aside class="notes">
+          This is the scalability play. Lives in .github/, version-controlled, reviewed like any other code.
+          It's a system prompt for your whole team. 30 minutes to set up.
+          "This is how you go from 'AI helps individuals' to 'AI enforces team standards.'"
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 13: DEMO 4 — Instructions File ============== -->
+      <section class="demo-slide">
+        <div class="demo-badge">Live Demo</div>
+        <h2>The Team Multiplier</h2>
+        <p class="demo-context">
+          Clear the chat. Add the instructions file.<br>
+          Now type a simple prompt&thinsp;&mdash;&thinsp;the same style that failed in Demo 1.
+        </p>
+        <div class="demo-prompt">
+          <code>Create a ReviewSummary component that shows average rating,
+rating distribution, and total review count</code>
+        </div>
+        <p style="font-size: 0.65em; color: var(--subtle); margin-top: 0.6em; max-width: 650px;">
+          No mention of TypeScript. No mention of Tailwind. No constraints.<br>
+          The instructions file handles all of it.
+        </p>
+        <aside class="notes">
+          THE moment. Clear Copilot Chat visibly. Open or create the copilot-instructions.md.
+          Type the simple prompt. Wait. Watch the output match every team convention.
+          "Same simple prompt style as Demo 1. Completely different output."
+          "Thirty minutes to set up. Benefits every developer, every interaction, forever."
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 14: The Compound Effect ============== -->
+      <section>
+        <h2>The <span class="accent">Compound</span> Effect</h2>
+        <div class="impact-grid">
+          <div class="impact-card">
+            <h4>Individual</h4>
+            <p>Fewer retries. Better first-pass output. Less time refactoring AI-generated code.</p>
+          </div>
+          <div class="impact-card">
+            <h4>Team of 10</h4>
+            <p>25+ recovered hours per week. <code>copilot-instructions.md</code> enforces standards without manual review overhead.</p>
+          </div>
+          <div class="impact-card">
+            <h4>Organization</h4>
+            <p>AI tool ROI moves from "nice to have" to measurable. No new purchases required &mdash; just better usage.</p>
+          </div>
+        </div>
+        <p style="text-align: center; margin-top: 0.8em; font-size: 0.78em;">
+          The tools are already paid for. The models are already capable.<br>
+          <span class="accent">The only variable left is how well we use them.</span>
+        </p>
+        <aside class="notes">
+          "One developer saves maybe 30 minutes a day. A team of ten? That's 25+ recovered hours a week."
+          "And this requires zero new tool purchases. No platform migration. No headcount."
+          "It requires education and adoption of techniques. That's it."
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 15: Key Takeaways + CTA ============== -->
+      <section>
+        <h2>Key Takeaways</h2>
+        <div class="takeaway-grid">
+          <div class="takeaway-item">
+            <span class="takeaway-num">1</span>
+            <div class="takeaway-text">
+              <strong>Engineer the prompt, don't just ask</strong>
+              Prompts are specifications, not questions. Structure them like requirements.
+            </div>
+          </div>
+          <div class="takeaway-item">
+            <span class="takeaway-num">2</span>
+            <div class="takeaway-text">
+              <strong>Constraints are your highest-leverage tool</strong>
+              When output isn't right, add "Do NOT" before rewriting the whole prompt.
+            </div>
+          </div>
+          <div class="takeaway-item">
+            <span class="takeaway-num">3</span>
+            <div class="takeaway-text">
+              <strong>Iterate in one thread, don't restart</strong>
+              Context accumulates. Three focused messages beat three separate conversations.
+            </div>
+          </div>
+          <div class="takeaway-item">
+            <span class="takeaway-num">4</span>
+            <div class="takeaway-text">
+              <strong>Scale with <code>copilot-instructions.md</code></strong>
+              Write once, whole team benefits. New hires get matching output from day one.
+            </div>
+          </div>
+          <div class="takeaway-item">
+            <span class="takeaway-num">5</span>
+            <div class="takeaway-text">
+              <strong>Rethink the workflow, don't bolt AI on</strong>
+              Step back to the outcome. Design the process with AI, not around it.
+            </div>
+          </div>
+        </div>
+        <p style="text-align: center; margin-top: 0.5em; font-size: 0.72em;">
+          <strong>Try today:</strong> Add a <code>copilot-instructions.md</code> to one repo. Use APE on your next prompt.
+        </p>
+        <p class="subtle" style="text-align: center; margin-top: 0.3em;">
+          The model is already good enough. Your instructions are the variable.
+        </p>
+        <aside class="notes">
+          "If you remember nothing else — these five."
+          Read each one. Don't elaborate unless running short.
+          Land the closing line and let it sit for two seconds before moving to Q&A.
+        </aside>
+      </section>
+
+      <!-- ============== SLIDE 16: Q&A ============== -->
+      <section class="qa-slide">
+        <h1>Questions<span class="accent">?</span></h1>
+        <p style="color: var(--subtle); font-size: 0.7em; margin-top: 1em;">
+          Alex Carroll &nbsp;|&nbsp; COSY Team &nbsp;|&nbsp; AI CoP
+        </p>
+        <p style="color: var(--subtle); font-size: 0.55em; margin-top: 0.5em;">
+          Slides, demo scripts, and copilot-instructions.md templates available after the talk.
+        </p>
+        <aside class="notes">
+          Open floor. If no questions: "Here's one I get a lot: 'Won't the models just get better
+          and make this unnecessary?' Short answer: better models make good prompts even more powerful.
+          It's like asking if cars will get good enough that you don't need to steer."
+        </aside>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://unpkg.com/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+  <script src="https://unpkg.com/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+      transition: 'slide',
+      transitionSpeed: 'default',
+      backgroundTransition: 'slide',
+      center: true,
+      width: 1280,
+      height: 720,
+      margin: 0.08,
+      plugins: [RevealHighlight, RevealNotes]
+    });
+  </script>
+</body>
+</html>
